@@ -1,14 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 
-import {
-  IoIosPartlySunny,
-  IoMdThunderstorm,
-  IoMdRainy,
-  IoIosSnow,
-} from "react-icons/io";
-import { TiWeatherCloudy, TiWeatherPartlySunny } from "react-icons/ti";
-import { FaCloud, FaRegSun, FaSmog } from "react-icons/fa";
 import Image from "next/image";
 function Sidebar({
   weather,
@@ -19,40 +11,36 @@ function Sidebar({
   handleSearch,
   loading,
 }) {
-  const getWeatherIcon = (weatherCode) => {
-    switch (weatherCode) {
-      case "01d":
-        return <FaRegSun size={250} />;
-      case "01n":
-        return <FaRegSun size={250} />;
-      case "02d":
-        return <TiWeatherPartlySunny size={250} />;
-      case "02n":
-        return <TiWeatherPartlySunny size={250} />;
-      case "03d":
-      case "03n":
-      case "04d":
-      case "04n":
-        return <FaCloud size={250} />;
-      case "09d":
-      case "09n":
-        return <IoMdRainy size={250} />;
-      case "10d":
-      case "10n":
-        return <IoMdRainy size={250} />;
-      case "11d":
-      case "11n":
-        return <IoMdThunderstorm size={250} />;
-      case "13d":
-      case "13n":
-        return <IoIosSnow size={250} />;
-      case "50d":
-      case "50n":
-        return <FaSmog size={250} />;
-      default:
-        return <IoIosPartlySunny size={250} />;
-    }
+  const [currentDate, setCurrentDate] = useState("");
+
+  useEffect(() => {
+    const updateDate = () => {
+      const now = new Date();
+      const formattedDate = `${now.getDate()}-${
+        now.getMonth() + 1
+      }-${now.getFullYear()}`;
+      setCurrentDate(formattedDate);
+    };
+
+    // Update date when the component mounts
+    updateDate();
+
+    // Update date every minute (60,000 milliseconds)
+    const intervalId = setInterval(updateDate, 60000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const getCurrentTime = () => {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    return `${hours % 12 || 12}:${minutes < 10 ? "0" : ""}${minutes} ${
+      hours < 12 ? "AM" : "PM"
+    }`;
   };
+
   return (
     <div className="md:w-[35%] flex flex-col m-8 ">
       <div className="flex items-center justify-center">
@@ -70,6 +58,7 @@ function Sidebar({
           <AiOutlineSearch size={20} color="blue" />
         </button>
       </div>
+
       <div className="flex justify-center mt-12">
         <div className="relative w-40 h-40">
           <Image
@@ -97,8 +86,8 @@ function Sidebar({
         <hr className="w-[65%] " />
       </div>
       <div className="text-center mt-4">
-        <p>27-09-2023</p>
-        <p>Friday,12.44 PM</p>
+        <p>{currentDate}</p>
+        <p>{getCurrentTime()}</p>
         {weather && (
           <p className="mt-8 text-4xl font-bold">
             {weather.name?.toUpperCase()}

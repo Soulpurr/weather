@@ -2,9 +2,9 @@
 import Cards from "@/components/Cards";
 import Sidebar from "@/components/Sidebar";
 import React, { useEffect, useState } from "react";
-import { AiOutlineSearch } from "react-icons/ai";
-import { IoIosPartlySunny } from "react-icons/io";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 export default function Home() {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,6 @@ export default function Home() {
     setLoading(true);
 
     try {
-      console.log(lat, long);
       const response = await fetch(
         `${
           city.length == 0
@@ -39,7 +38,19 @@ export default function Home() {
       const data = await response.json();
       setWeather(data);
     } catch (error) {
-      console.log("Error fetching weather data:", error.message);
+      if (error?.message?.includes("city")) {
+        toast.error(`${error.message?.toUpperCase()}`, {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+        setCity("");
+      }
     } finally {
       setLoading(false);
     }
@@ -59,13 +70,14 @@ export default function Home() {
         (err) => {
           console.error(`Error getting location: ${err.message}`);
           // You can set default coordinates or handle the error as needed
-
+          setCity("Delhi");
           fetchWeatherData(); // Call fetchWeatherData with default or fallback coordinates
         }
       );
     } else {
       console.error("Geolocation is not supported by your browser");
       // You can set default coordinates or handle the lack of support as needed
+      setCity("Delhi");
       fetchWeatherData(); // Call fetchWeatherData with default or fallback coordinates
     }
   }, [city, lat, long]);
@@ -183,9 +195,15 @@ export default function Home() {
         return "#ededef"; // default background color
     }
   };
-  
+
   return (
-    <div className={`flex flex-col md:flex-row justify-center  h-screen`} style={{backgroundColor:`${getBackgroundColor(weather?.weather[0].icon)}`}}>
+    <div
+      className={`flex flex-col md:flex-row justify-center h-auto sm:h-screen`}
+      style={{
+        backgroundColor: `${getBackgroundColor(weather?.weather[0].icon)}`,
+      }}
+    >
+      <ToastContainer />
       <Sidebar
         weather={weather}
         convertTemperature={convertTemperature}
